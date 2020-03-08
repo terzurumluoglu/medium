@@ -1,43 +1,44 @@
 import { Component, OnInit } from '@angular/core';
 import * as firebase from "firebase";
-import { Post, User, Cat } from 'src/app/models/model';
+import { Post } from 'src/app/models/model';
+// import { map } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+    selector: 'app-home',
+    templateUrl: './home.component.html',
+    styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  posts : Post[] = [];
-  ref = firebase.firestore();
-  constructor() { }
+    posts: Post[] = [];
 
-  ngOnInit(): void {
-    this.getPosts(1); // Category Id' si 1 olan postları getirdik.
-  }
+    postRef = firebase.firestore().collection('posts');
+    catRef = firebase.firestore().collection('cats');
+    userRef = firebase.firestore().collection('users');
+    constructor() { }
 
-  getPosts(catId: number) {
-    let post: Post = new Post();
-    this.ref.collection('/posts').where('catId', '==', catId).get().then(postDoc => {
-      postDoc.forEach(element => {
-        post.postId = element.data().postId;
-        post.postTitle = element.data().postTitle;
-        post.postContent = element.data().postContent;
-        this.ref.collection('/users').where('userId', '==', element.data().userId).get().then(userDoc => {
-          post.user = userDoc.docs[0].data() as User;
-          this.ref.collection('/cats').where('catId', '==', catId).get().then(catDoc => {
-            post.cat = catDoc.docs[0].data() as Cat;
-          }).catch(err => {
-            console.log(err);
-          })
-        }).catch(err => {
-          console.log(err);
+    ngOnInit(): void {
+        let posts : Post[] = [];
+        this.getPost(1).then((p : any[]) => {
+            p.forEach(element => {
+                let post : Post = new Post(element.postId,element.postTitle,element.postContent);   
+                posts.push(post);
+            });
+            console.log(posts);
+        }).catch(e => {
+            console.log(e);
         });
-        this.posts.push(post);
-      });
-      console.log(this.posts);
-    }).catch(err => {
-      console.log(err);
-    })
-  }
+
+    }
+
+    async getPost(param ?: number){
+        let snapshot : any;
+        if (param) {
+            snapshot = await this.postRef.where('catId','==',param).get();
+        }else{
+            snapshot = await this.postRef.get();
+        }
+        return snapshot.docs.map((doc: any) => doc.data());;
+    }
+    
+
 }
