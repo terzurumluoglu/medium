@@ -18,7 +18,7 @@ export class HomeComponent implements OnInit {
 
     ngOnInit(): void {
         let posts : Post[] = [];
-        this.getPost(1).then((p : any[]) => {
+        this.getPost(undefined).then((p : any[]) => {
             p.forEach(element => {
                 let post : Post = new Post(element.postId,element.postTitle,element.postContent);   
                 posts.push(post);
@@ -30,7 +30,14 @@ export class HomeComponent implements OnInit {
 
     }
 
-    async getPost(param ?: number){
+    async getPost(param ?: string){
+        let catId : number = parseInt(param);
+        console.log(catId);
+        if (isNaN(catId)) {
+            console.log('if');
+        } else {
+            console.log('else');
+        }
         let snapshot : any;
         if (param) {
             snapshot = await this.postRef.where('catId','==',param).get();
