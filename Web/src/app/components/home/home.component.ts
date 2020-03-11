@@ -17,35 +17,52 @@ export class HomeComponent implements OnInit {
     constructor() { }
 
     ngOnInit(): void {
-        let posts : Post[] = [];
-        this.getPost(undefined).then((p : any[]) => {
-            p.forEach(element => {
-                let post : Post = new Post(element.postId,element.postTitle,element.postContent);   
-                posts.push(post);
-            });
-            console.log(posts);
-        }).catch(e => {
-            console.log(e);
-        });
+        this.getData();
+        // let posts : Post[] = [];
+        // this.getPost(undefined).then((p : any[]) => {
+        //     p.forEach(element => {
+        //         let post : Post = new Post(element.postId,element.postTitle,element.postContent);   
+        //         posts.push(post);
+        //     });
+        //     console.log(posts);
+        // }).catch(e => {
+        //     console.log(e);
+        // });
 
     }
 
-    async getPost(param ?: string){
-        let catId : number = parseInt(param);
+    async getData() {
+        const data = await fetch('https://us-central1-mediumtoprak.cloudfunctions.net/GetPosts?catId=4');
+        let dataJson = data.json();
+        if (data.status == 200) {
+            dataJson.then(p => {
+                console.log(p);
+            }).catch(e => {
+                console.log(e);
+            })
+        } else if (data.status == 404) {
+            console.log('Bulunamadı!');
+        }
+        else {
+            console.log('Hata');
+        }
+    }
+
+
+    async getPost(param?: string) {
+        let catId: number = parseInt(param);
         console.log(catId);
         if (isNaN(catId)) {
             console.log('if');
         } else {
             console.log('else');
         }
-        let snapshot : any;
+        let snapshot: any;
         if (param) {
-            snapshot = await this.postRef.where('catId','==',param).get();
-        }else{
+            snapshot = await this.postRef.where('catId', '==', param).get();
+        } else {
             snapshot = await this.postRef.get();
         }
         return snapshot.docs.map((doc: any) => doc.data());;
     }
-    
-
 }
